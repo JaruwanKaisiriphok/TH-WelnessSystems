@@ -8,14 +8,12 @@ from datetime import date
 import json
 
 from fastapi import FastAPI
-from app.api import testing, source
+from app.api import users,  alerts
 
 
 
 app = FastAPI()
-
-
-app.include_router(testing.router)
-app.include_router(source.router)
+#app.include_router(users.router)
+app.include_router(alerts.router)
  #app.include_router(users.router)
 #app.include_router(appointments.router
