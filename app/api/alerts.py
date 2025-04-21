@@ -4,6 +4,7 @@
 #from uuid import uuid4
 #from datetime import datetime
 #from app.utils.response_code_center import ResponseHandler, ResponseCode
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from uuid import UUID
@@ -17,12 +18,12 @@ from dotenv import load_dotenv
 router = APIRouter(
 
     prefix="/api/v1/alearts",
-    tags=["Alerts"]
+    tags=["alerts"]
 )
 # โหลดค่า ENV
 load_dotenv()
 
-router = APIRouter()
+#router = APIRouter()
 
 # สร้าง Supabase Client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -35,7 +36,7 @@ class Alert(BaseModel):
     description: str
 
 # ✅ CREATE
-@router.post("/")
+@router.post("/", tags=["alert"])
 def create_alert(alert: Alert):
     data = {
         "alert_type": alert.alert_type,
@@ -52,7 +53,7 @@ def create_alert(alert: Alert):
     )
 
 # ✅ READ ALL
-@router.get("/")
+@router.get("/", tags=["alert"])
 def get_alerts():
     res = supabase.table("alerts").select("*").order("created_at", desc=True).execute()
     if not res.data:
@@ -64,7 +65,7 @@ def get_alerts():
     )
 
 # ✅ READ BY ID
-@router.get("/{alert_id}")
+@router.get("/{alert_id}", tags=["alert"])
 def get_alert(alert_id: UUID):
     res = supabase.table("alerts").select("*").eq("id", str(alert_id)).execute()
     if not res.data:

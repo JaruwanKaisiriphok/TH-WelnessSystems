@@ -47,7 +47,7 @@ fake_users_db = [
 ]
 
 # ✅ GET all users
-@router.get("/")
+@router.get("/", tags=["alert"])
 def get_users():
     if not fake_users_db:
         return ResponseHandler.error(
