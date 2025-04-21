@@ -36,7 +36,7 @@ class Alert(BaseModel):
     description: str
 
 # ✅ CREATE
-@router.post("/", tags=["alert"])
+@router.post("/")
 def create_alert(alert: Alert):
     data = {
         "alert_type": alert.alert_type,
@@ -53,7 +53,7 @@ def create_alert(alert: Alert):
     )
 
 # ✅ READ ALL
-@router.get("/", tags=["alert"])
+@router.get("/")
 def get_alerts():
     res = supabase.table("alerts").select("*").order("created_at", desc=True).execute()
     if not res.data:
@@ -65,7 +65,7 @@ def get_alerts():
     )
 
 # ✅ READ BY ID
-@router.get("/{alert_id}", tags=["alert"])
+@router.get("/{alert_id}")
 def get_alert(alert_id: UUID):
     res = supabase.table("alerts").select("*").eq("id", str(alert_id)).execute()
     if not res.data:
