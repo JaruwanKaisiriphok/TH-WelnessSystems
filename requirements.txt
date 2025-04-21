@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 httpx
 python-dotenv
-pydantic
+pydantic[email]
 asyncpg
 supabase
+
+
