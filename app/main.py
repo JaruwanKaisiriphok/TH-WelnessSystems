@@ -8,12 +8,12 @@ from datetime import date
 import json
 
 from fastapi import FastAPI
-from app.api import users,  alerts
-
+from app.api import users,  alerts, patient
 
 
 app = FastAPI()
-#app.include_router(users.router)
-app.include_router(alerts.router)
+app.include_router(patient.router)
+app.include_router(users.router)
+
  #app.include_router(users.router)
 #app.include_router(appointments.router
