@@ -59,13 +59,13 @@ def get_alerts():
 
 # ✅ READ BY NAME
 @router.get("/search", response_class=UnicodeJSONResponse)
-def search_patients(first_name: str = "", last_name: str = "", status: str = ""):
+def search_patients(full_name: str = "", full_name_local: str = "", status: str = ""):
     query = supabase.table("patients").select("*")
     
-    if first_name:
-        query = query.ilike("first_name", f"%{first_name}%")
-    if last_name:
-        query = query.ilike("last_name", f"%{last_name}%")
+    if full_name:
+        query = query.ilike("full_name", f"%{full_name}%")
+    if full_name_local:
+        query = query.ilike("full_name_local", f"%{full_name_local}%")
     if status:
         query = query.ilike("status", f"{status}")        
     
@@ -73,8 +73,8 @@ def search_patients(first_name: str = "", last_name: str = "", status: str = "")
     
     if not res.data:
         return ResponseHandler.error(*ResponseCode.USER_NOT_FOUND, details={
-            "first_name": first_name,
-            "last_name": last_name,
+            "full_name": full_name,
+            "full_name_local": full_name_local,
             "status": status,
         })
     
