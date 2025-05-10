@@ -28,68 +28,57 @@ class UnicodeJSONResponse(Response):
         ).encode("utf-8")
 
 
-# โหลดค่า ENV
+# Load environment variables
 load_dotenv()
 
-#router = APIRouter()
-
-# สร้าง Supabase Client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Pydantic model
 class Alert(BaseModel):
     alert_type: str
     description: str
 
-# ✅ READ BY Patient ID
-@router.get("/search", response_class=UnicodeJSONResponse)
-def search_patients(patientId: str = ""):  
-    query = supabase.table("patients").select("*")
-    
-    if patientId:
-        #query = query.filter("{patientId}")
-        query = query.filter(f"patientId || ' ' ", "ilike", f"%{patientId}%")
-    
+@router.get("/by-id", response_class=UnicodeJSONResponse)
+def get_patient_by_id(patientId: str):
+    query = supabase.table("patients").select("""
+        *,
+        religions(religion_name),
+        professions(profession_name),
+        addresses(street, city, state, country),
+        patient_types(type_name),
+        relationships(relationship_name),
+        alerts(alert_type),
+        salespersons(name),
+        marketing_persons(name),
+        customer_profiles(medical_history),
+        sources(source_name)
+    """).eq("patientId", patientId)
+
     res = query.execute()
-    
+
     if not res.data:
-        return ResponseHandler.error(*ResponseCode.USER_NOT_FOUND, details={
-            "patientId": patientId
-        })
+        return ResponseHandler.error(*ResponseCode.USER_NOT_FOUND, details={"patientId": patientId})
 
-    # 🔄 สร้าง full_name ในผลลัพธ์
-    patients_with_fullname = []
-    for patient in res.data:
-        fname = patient.get("first_name", "")
-        lname = patient.get("last_name", "")
-        full_name_result = f"{fname} {lname}".strip()
+    p = res.data[0]  # Get the first matched patient
 
-        patients_with_fullname.append({
-            "id": patient.get("id"),
-            "patientId": patient.get("patientId"),
-            "full_name": full_name_result,
-            "sex": patient.get("sex"),
-            "email": patient.get("email"),
-            "status": patient.get("status"),
-            "religion_id": patient.get("religion_id"),
-            "address_id": patient.get("address_id"),
-            "profession_id": patient.get("profession_id"),
-            "patient_type_id": patient.get("patient_type_id"),
-            "payment_id": patient.get("payment_id"),
-            "allergy_id": patient.get("allergy_id"),
-            "relationship_id": patient.get("relationship_id"),
-            "alert_id": patient.get("alert_id"),
-            "salesperson_id": patient.get("salesperson_id"),
-            "marketing_person_id": patient.get("marketing_person_id"),
-            "customer_profile_id": patient.get("customer_profile_id"),
-            "source_id": patient.get("source_id"),                                                                        
-            # ถ้ามี field อื่นๆ ที่อยากแนบก็เพิ่มได้
-            
-        })
+    result = {
+    "id": p["id"],
+    "patientId": p.get("patientId"),
+    "full_name": f"{p.get('first_name', '')} {p.get('last_name', '')}".strip(),
+    "religion_name": p["religions"]["religion_name"] if p.get("religions") else None,
+    "profession": p["professions"]["profession_name"] if p.get("professions") else None,
+    "address_city": p["addresses"]["city"] if p.get("addresses") else None,
+    "patient_type": p["patient_types"]["type_name"] if p.get("patient_types") else None,
+    "relationship": p["relationships"]["relationship_name"] if p.get("relationships") else None,
+    "alert_type": p["alerts"]["alert_type"] if p.get("alerts") else None,
+    "salesperson": p["salespersons"]["name"] if p.get("salespersons") else None,
+    "marketer": p["marketing_persons"]["name"] if p.get("marketing_persons") else None,
+    "source": p["sources"]["source_name"] if p.get("sources") else None,
+}
+
 
     return ResponseHandler.success(
         message=ResponseCode.SUCCESS_RETRIEVED[1],
-        data={"total": len(patients_with_fullname), "patients": patients_with_fullname}
+        data=result
     )

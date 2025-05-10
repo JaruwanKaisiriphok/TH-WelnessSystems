@@ -67,7 +67,8 @@ def search_patients(full_name: str = "", full_name_local: str = "", status: str 
     if full_name_local:
         query = query.ilike("full_name_local", f"{full_name_local}%")
     if status:
-        query = query.ilike("status", f"{status}")        
+        query = query.ilike("status", f"{status}")
+      
     
     res = query.execute()
     
